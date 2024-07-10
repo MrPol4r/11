@@ -1,59 +1,47 @@
 <?php
-define('IS_TEST_ENV', true);
-ob_start(); // Inicia el buffer de salida
-
-require_once __DIR__ . "/../conexion.php";
-require_once __DIR__ . "/login_helper.php";
-
-$id_user = iniciarSesionYValidarPermisos($conexion, "productos");
-
+include_once "includes/header.php";
+include "../conexion.php";
+$id_user = $_SESSION['idUser'];
+$permiso = "productos";
+$sql = mysqli_query($conexion, "SELECT p.*, d.* FROM permisos p INNER JOIN detalle_permisos d ON p.id = d.id_permiso WHERE d.id_usuario = $id_user AND p.nombre = '$permiso'");
+$existe = mysqli_fetch_all($sql);
+if (empty($existe) && $id_user != 1) {
+    header("Location: permisos.php");
+}
 if (empty($_GET['id'])) {
-    if (!headers_sent()) {
+    header("Location: productos.php");
+} else {
+    $id_producto = $_GET['id'];
+    if (!is_numeric($id_producto)) {
         header("Location: productos.php");
     }
-    exit();
-} else {
-    $id_producto_seguro = $_GET['id'];
-    if (!is_numeric($id_producto_seguro)) {
-        if (!headers_sent()) {
-            header("Location: productos.php");
-        }
-        exit();
-    }
-
-    $consulta_segura = $conexion->prepare("SELECT * FROM producto WHERE codproducto = ?");
-    $consulta_segura->bind_param("i", $id_producto_seguro);
-    $consulta_segura->execute();
-    $consulta = $consulta_segura->get_result();
+    $consulta = mysqli_query($conexion, "SELECT * FROM producto WHERE codproducto = $id_producto");
     $data_producto = mysqli_fetch_assoc($consulta);
-    $id_producto = $id_producto_seguro;
 }
-
 if (!empty($_POST)) {
     $alert = "";
-    if (!empty($_POST['cantidad']) || !empty($_POST['precio'])) {
-        $precio_seguro = $_POST['precio'];
-        $cantidad_segura = $_POST['cantidad'];
-        $producto_id_seguro = $id_producto_seguro;
-        $precio = $precio_seguro;
-        $cantidad = $cantidad_segura;
-        $producto_id = $producto_id_seguro;
+    if (!empty($_POST['cantidad']) || !empty($_POST['precio']) || !empty($_POST['producto_id'])) {
+        $precio = $_POST['precio'];
+        $cantidad = $_POST['cantidad'];
+        $producto_id = $_GET['id'];
         $total = $cantidad + $data_producto['existencia'];
-        $query_insert_seguro = $conexion->prepare("UPDATE producto SET existencia = ? WHERE codproducto = ?");
-        $query_insert_seguro->bind_param("ii", $total, $producto_id_seguro);
-        $query_insert_seguro->execute();
-        if ($query_insert_seguro->affected_rows > 0) {
-            $alert = '<div class="alert alert-success" role="alert">Stock actualizado</div>';
+        $query_insert = mysqli_query($conexion, "UPDATE producto SET existencia = $total WHERE codproducto = $id_producto");
+        if ($query_insert) {
+            $alert = '<div class="alert alert-success" role="alert">
+                        Stock actualizado
+                    </div>';
         } else {
-            $alert = '<div class="alert alert-danger" role="alert">Error al ingresar la cantidad</div>';
+            $alert = '<div class="alert alert-danger" role="alert">
+                        Error al ingresar la cantidad
+                    </div>';
         }
         mysqli_close($conexion);
     } else {
-        $alert = '<div class="alert alert-danger" role="alert">Todo los campos son obligatorios</div>';
+        $alert = '<div class="alert alert-danger" role="alert">
+                        Todo los campos son obligatorios
+                    </div>';
     }
 }
-
-ob_end_flush(); // Finaliza el buffer de salida y envía la salida
 ?>
 <div class="row">
     <div class="col-lg-6 m-auto">
@@ -80,6 +68,7 @@ ob_end_flush(); // Finaliza el buffer de salida y envía la salida
                         <label for="cantidad">Agregar Cantidad</label>
                         <input type="number" placeholder="Ingrese cantidad" name="cantidad" id="cantidad" class="form-control">
                     </div>
+
                     <input type="submit" value="Actualizar" class="btn btn-primary">
                     <a href="productos.php" class="btn btn-danger">Regresar</a>
                 </form>

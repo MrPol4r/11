@@ -15,24 +15,12 @@ if (!empty($_POST)) {
               Todo los campos son requeridos
             </div>';
   } else {
-    // Asignar los parámetros POST a variables seguras
-    $codproductoSeguro = $_GET['id'];
-    $codigoSeguro = $_POST['codigo'];
-    $productoSeguro = $_POST['producto'];
-    $precioSeguro = $_POST['precio'];
-
-    // Realizar la consulta segura
-    $query_update_seguro = $conexion->prepare("UPDATE producto SET codigo = ?, descripcion = ?, precio = ? WHERE codproducto = ?");
-    $query_update_seguro->bind_param("ssdi", $codigoSeguro, $productoSeguro, $precioSeguro, $codproductoSeguro);
-    $query_update_seguro->execute();
-
-    // Asignar las variables seguras a las variables originales
-    $codproducto = $codproductoSeguro;
-    $codigo = $codigoSeguro;
-    $producto = $productoSeguro;
-    $precio = $precioSeguro;
-
-    if ($query_update_seguro->affected_rows > 0) {
+    $codproducto = $_GET['id'];
+    $codigo = $_POST['codigo'];
+    $producto = $_POST['producto'];
+    $precio = $_POST['precio'];
+    $query_update = mysqli_query($conexion, "UPDATE producto SET codigo = '$codigo', descripcion = '$producto', precio= $precio WHERE codproducto = $codproducto");
+    if ($query_update) {
       $alert = '<div class="alert alert-primary" role="alert">
               Producto Modificado
             </div>';
@@ -49,23 +37,15 @@ if (!empty($_POST)) {
 if (empty($_REQUEST['id'])) {
   header("Location: productos.php");
 } else {
-  // Asignar el parámetro REQUEST a una variable segura
-  $id_productoSeguro = $_REQUEST['id'];
-  if (!is_numeric($id_productoSeguro)) {
+  $id_producto = $_REQUEST['id'];
+  if (!is_numeric($id_producto)) {
     header("Location: productos.php");
   }
-  
-  // Realizar la consulta segura
-  $query_producto_seguro = $conexion->prepare("SELECT * FROM producto WHERE codproducto = ?");
-  $query_producto_seguro->bind_param("i", $id_productoSeguro);
-  $query_producto_seguro->execute();
-  $result_producto_seguro = $query_producto_seguro->get_result();
+  $query_producto = mysqli_query($conexion, "SELECT * FROM producto WHERE codproducto = $id_producto");
+  $result_producto = mysqli_num_rows($query_producto);
 
-  // Asignar la variable segura a la variable original
-  $id_producto = $id_productoSeguro;
-
-  if ($result_producto_seguro->num_rows > 0) {
-    $data_producto = $result_producto_seguro->fetch_assoc();
+  if ($result_producto > 0) {
+    $data_producto = mysqli_fetch_assoc($query_producto);
   } else {
     header("Location: productos.php");
   }

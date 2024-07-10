@@ -1,14 +1,12 @@
-<?php
-if (php_sapi_name() !== 'cli') { // Solo ejecuta session_start() si no estamos en línea de comandos (no en pruebas)
-    session_start();
-    if (empty($_SESSION['active'])) {
-        header('location: ../');
-        exit;
-    }
+<?php session_start();
+if (empty($_SESSION['active'])) {
+    header('location: ../');
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -21,10 +19,12 @@ if (php_sapi_name() !== 'cli') { // Solo ejecuta session_start() si no estamos e
     <link rel="stylesheet" href="../assets/js/jquery-ui/jquery-ui.min.css">
     <script src="../assets/js/all.min.js" crossorigin="anonymous"></script>
 </head>
+
 <body class="sb-nav-fixed">
     <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
         <a class="navbar-brand" href="index.php">Interfaz</a>
         <button class="btn btn-link btn-sm order-1 order-lg-0" id="sidebarToggle" href="#"><i class="fas fa-bars"></i></button>
+
         <!-- Navbar-->
         <ul class="navbar-nav ml-auto">
             <li class="nav-item dropdown">
@@ -67,6 +67,7 @@ if (php_sapi_name() !== 'cli') { // Solo ejecuta session_start() si no estamos e
                             <div class="sb-nav-link-icon"><i class="fas fa-user"></i></div>
                             Usuarios
                         </a>
+
                     </div>
                 </div>
             </nav>

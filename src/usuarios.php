@@ -1,5 +1,4 @@
-<?php
-include_once "includes/header.php";
+<?php include_once "includes/header.php";
 include "../conexion.php";
 $id_user = $_SESSION['idUser'];
 $permiso = "usuarios";
@@ -15,35 +14,19 @@ if (!empty($_POST)) {
         Todo los campos son obligatorios
         </div>';
     } else {
-        // Asignar los parámetros POST a variables seguras
-        $nombreSeguro = $_POST['nombre'];
-        $emailSeguro = $_POST['correo'];
-        $userSeguro = $_POST['usuario'];
-        $claveSeguro = md5($_POST['clave']);
-
-        // Cambio: Usando prepared statements para prevenir inyección SQL
-        $query_seguro = $conexion->prepare("SELECT * FROM usuario WHERE correo = ?");
-        $query_seguro->bind_param("s", $emailSeguro);
-        $query_seguro->execute();
-        $result_seguro = $query_seguro->get_result();
-
-        // Asignar las variables seguras a las variables originales
-        $nombre = $nombreSeguro;
-        $email = $emailSeguro;
-        $user = $userSeguro;
-        $clave = $claveSeguro;
-
-        if ($result_seguro->num_rows > 0) {
+        $nombre = $_POST['nombre'];
+        $email = $_POST['correo'];
+        $user = $_POST['usuario'];
+        $clave = md5($_POST['clave']);
+        $query = mysqli_query($conexion, "SELECT * FROM usuario where correo = '$email'");
+        $result = mysqli_fetch_array($query);
+        if ($result > 0) {
             $alert = '<div class="alert alert-warning" role="alert">
                         El correo ya existe
                     </div>';
         } else {
-            // Cambio: Usando prepared statements para prevenir inyección SQL
-            $query_insert_seguro = $conexion->prepare("INSERT INTO usuario(nombre, correo, usuario, clave) VALUES (?, ?, ?, ?)");
-            $query_insert_seguro->bind_param("ssss", $nombreSeguro, $emailSeguro, $userSeguro, $claveSeguro);
-            $query_insert_seguro->execute();
-
-            if ($query_insert_seguro->affected_rows > 0) {
+            $query_insert = mysqli_query($conexion, "INSERT INTO usuario(nombre,correo,usuario,clave) values ('$nombre', '$email', '$user', '$clave')");
+            if ($query_insert) {
                 $alert = '<div class="alert alert-primary" role="alert">
                             Usuario registrado
                         </div>';

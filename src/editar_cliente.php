@@ -12,28 +12,17 @@ if (!empty($_POST)) {
     if (empty($_POST['nombre']) || empty($_POST['telefono']) || empty($_POST['direccion'])) {
         $alert = '<div class="alert alert-danger" role="alert">Todo los campos son requeridos</div>';
     } else {
-        // Asignar los parámetros POST a variables seguras
-        $idclienteSeguro = $_POST['id'];
-        $nombreSeguro = $_POST['nombre'];
-        $telefonoSeguro = $_POST['telefono'];
-        $direccionSeguro = $_POST['direccion'];
+        $idcliente = $_POST['id'];
+        $nombre = $_POST['nombre'];
+        $telefono = $_POST['telefono'];
+        $direccion = $_POST['direccion'];
+            $sql_update = mysqli_query($conexion, "UPDATE cliente SET nombre = '$nombre' , telefono = '$telefono', direccion = '$direccion' WHERE idcliente = $idcliente");
 
-        // Cambio: Usando prepared statements para prevenir inyección SQL
-        $sql_update_seguro = $conexion->prepare("UPDATE cliente SET nombre = ?, telefono = ?, direccion = ? WHERE idcliente = ?");
-        $sql_update_seguro->bind_param("sssi", $nombreSeguro, $telefonoSeguro, $direccionSeguro, $idclienteSeguro);
-        $sql_update_seguro->execute();
-
-        // Asignar las variables seguras a las variables originales
-        $idcliente = $idclienteSeguro;
-        $nombre = htmlspecialchars($nombreSeguro, ENT_QUOTES, 'UTF-8');
-        $telefono = htmlspecialchars($telefonoSeguro, ENT_QUOTES, 'UTF-8');
-        $direccion = htmlspecialchars($direccionSeguro, ENT_QUOTES, 'UTF-8');
-
-        if ($sql_update_seguro->affected_rows > 0) {
-            $alert = '<div class="alert alert-success" role="alert">Cliente Actualizado correctamente</div>';
-        } else {
-            $alert = '<div class="alert alert-danger" role="alert">Error al Actualizar el Cliente</div>';
-        }
+            if ($sql_update) {
+                $alert = '<div class="alert alert-success" role="alert">Cliente Actualizado correctamente</div>';
+            } else {
+                $alert = '<div class="alert alert-danger" role="alert">Error al Actualizar el Cliente</div>';
+            }
     }
 }
 // Mostrar Datos
@@ -41,28 +30,17 @@ if (!empty($_POST)) {
 if (empty($_REQUEST['id'])) {
     header("Location: clientes.php");
 }
-
-// Asignar el parámetro REQUEST a una variable segura
-$idclienteSeguro = $_REQUEST['id'];
-
-// Cambio: Usando prepared statements para prevenir inyección SQL
-$sql_seguro = $conexion->prepare("SELECT * FROM cliente WHERE idcliente = ?");
-$sql_seguro->bind_param("i", $idclienteSeguro);
-$sql_seguro->execute();
-$sql = $sql_seguro->get_result();
-
-// Asignar la variable segura a la variable original
-$idcliente = $idclienteSeguro;
-
+$idcliente = $_REQUEST['id'];
+$sql = mysqli_query($conexion, "SELECT * FROM cliente WHERE idcliente = $idcliente");
 $result_sql = mysqli_num_rows($sql);
 if ($result_sql == 0) {
     header("Location: clientes.php");
 } else {
     if ($data = mysqli_fetch_array($sql)) {
         $idcliente = $data['idcliente'];
-        $nombre = htmlspecialchars($data['nombre'], ENT_QUOTES, 'UTF-8');
-        $telefono = htmlspecialchars($data['telefono'], ENT_QUOTES, 'UTF-8');
-        $direccion = htmlspecialchars($data['direccion'], ENT_QUOTES, 'UTF-8');
+        $nombre = $data['nombre'];
+        $telefono = $data['telefono'];
+        $direccion = $data['direccion'];
     }
 }
 ?>
@@ -78,7 +56,7 @@ if ($result_sql == 0) {
                 <div class="card-body">
                     <form class="" action="" method="post">
                         <?php echo isset($alert) ? $alert : ''; ?>
-                        <input type="hidden" name="id" value="<?php echo htmlspecialchars($idcliente, ENT_QUOTES, 'UTF-8'); ?>">
+                        <input type="hidden" name="id" value="<?php echo $idcliente; ?>">
                         <div class="form-group">
                             <label for="nombre">Nombre</label>
                             <input type="text" placeholder="Ingrese Nombre" name="nombre" class="form-control" id="nombre" value="<?php echo $nombre; ?>">
@@ -98,6 +76,8 @@ if ($result_sql == 0) {
             </div>
         </div>
     </div>
+
+
 </div>
 <!-- /.container-fluid -->
 <?php include_once "includes/footer.php"; ?>
